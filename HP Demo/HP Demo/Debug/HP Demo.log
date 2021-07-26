@@ -1,0 +1,7 @@
+﻿  Scene.cpp
+E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\HP Demo\Scene.cpp(31,17): warning C4316: 'DX11': object allocated on the heap may not be aligned 16
+E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\HP Demo\Scene.cpp(48,27): warning C4316: 'Camera': object allocated on the heap may not be aligned 16
+E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\HP Demo\Scene.cpp(82,46): warning C4316: 'Shader': object allocated on the heap may not be aligned 16
+E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\HP Demo\Scene.cpp(121,21): warning C4018: '<': signed/unsigned mismatch
+E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\HP Demo\Scene.cpp(204,20): warning C4018: '<': signed/unsigned mismatch
+  HP Demo.vcxproj -> E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\Debug\HP Demo.exe

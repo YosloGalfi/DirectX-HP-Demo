@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\Debug\HP Demo.exe</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\Debug\DefaultPS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\Debug\DefaultVS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\Debug\SkyPS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\Debug\SkyVS.cso</FullPath>
+    </ContentFile>
+  </ContentFiles>
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>
