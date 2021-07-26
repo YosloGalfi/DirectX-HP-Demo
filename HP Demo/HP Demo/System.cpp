@@ -109,6 +109,15 @@ bool System::UpdateOnFrame()
     result = scene->RenderFrame(fpsTimer.DeltaTime() / 2.0f);
     if (!result)
         return false;
+    
+    RECT rc;
+    GetClientRect(this->hwnd, &rc);
+
+    std::string text = "RAM: " + std::to_string(RamUsage()) + " MB" + "\nVRAM: " + std::to_string(VramUsage()) + " MB";
+
+    std::wstring tempText = std::wstring(text.begin(), text.end());
+
+    DrawText(GetDC(this->hwnd), tempText.c_str(), -1, &rc, DT_LEFT | DT_TOP);
 
     return true;
 }
@@ -177,6 +186,10 @@ LRESULT CALLBACK System::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPA
         PostQuitMessage(0);
         break;
     }
+    case WM_CREATE:
+    {
+        //AddGUI(hwnd);
+    }
 
     /* Default proc */
     default:
@@ -185,4 +198,79 @@ LRESULT CALLBACK System::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPA
     }
 
     return 0;
+}
+
+void System::AddGUI(HWND hwnd)
+{
+    this->hmenu = CreateMenu();
+
+    AppendMenu(this->hmenu, MF_STRING, 1, L"RAM");
+    AppendMenu(this->hmenu, MF_STRING, 2, L"VRAM");
+
+    SetMenu(hwnd, this->hmenu);
+}
+
+float System::VramUsage()
+{
+    IDXGIFactory* dxgifactory = nullptr;
+    HRESULT ret_code = ::CreateDXGIFactory(
+        __uuidof(IDXGIFactory),
+        reinterpret_cast<void**>(&dxgifactory));
+
+    float memoryUsage = 0;
+
+    if (SUCCEEDED(ret_code))
+    {
+        IDXGIAdapter* dxgiAdapter = nullptr;
+
+        if (SUCCEEDED(dxgifactory->EnumAdapters(0, &dxgiAdapter)))
+        {
+            IDXGIAdapter4* dxgiAdapter4 = NULL;
+            if (SUCCEEDED(dxgiAdapter->QueryInterface(__uuidof(IDXGIAdapter4), (void**)&dxgiAdapter4)))
+            {
+                DXGI_QUERY_VIDEO_MEMORY_INFO info;
+
+                if (SUCCEEDED(dxgiAdapter4->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &info)))
+                {
+                    memoryUsage = float(info.CurrentUsage / 1024.0 / 1024.0); //MiB
+
+                    /*char msg[100];
+                    sprintf_s(msg, "%.2f MiB used", memoryUsage);
+                    MessageBoxA(0, msg, "VRAM", 0);*/
+                };
+
+                dxgiAdapter4->Release();
+            }
+            dxgiAdapter->Release();
+        }
+        dxgifactory->Release();
+    }
+
+    return memoryUsage;
+}
+
+float System::RamUsage()
+{
+    DWORD currentProcessID = GetCurrentProcessId();
+
+    HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, currentProcessID);
+
+    if (NULL == hProcess)
+        return 0.0f;
+
+    float memoryUsage = 0;
+
+    PROCESS_MEMORY_COUNTERS pmc{};
+    if (GetProcessMemoryInfo(hProcess, &pmc, sizeof(pmc)))
+    {
+        //PagefileUsage is the:
+        //The Commit Charge value in bytes for this process.
+        //Commit Charge is the total amount of memory that the memory manager has committed for a running process.
+
+        memoryUsage = float(pmc.PagefileUsage / 1024.0 / 1024.0); //MiB
+    }
+
+    CloseHandle(hProcess);
+
+    return memoryUsage;
 }

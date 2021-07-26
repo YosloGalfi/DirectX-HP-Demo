@@ -10,6 +10,11 @@
 #include "Scene.h"
 #include "Timer.h"
 
+//#include <d3d11_4.h>
+#include <dxgi1_6.h>
+#include <psapi.h>
+#include <string>
+
 #define DEFAULT_SCREEN_WIDTH 2560	
 #define DEFAULT_SCREEN_HEIGHT 1440
 
@@ -27,12 +32,18 @@ private:
 	bool UpdateOnFrame();
 	void InitializeWindows(int& width, int& height);
 	LRESULT CALLBACK MessageHandler(HWND, UINT, WPARAM, LPARAM);
+	void AddGUI(HWND hwnd);
+
+	float VramUsage(); // Return the current amount of vram usage
+	float RamUsage(); // Return the current amount of ram usage
 
 private:
 	const wchar_t* projectTitel = L"Harry Potter Features showcase";
 	int screenWidth, screenHeight;
 	HINSTANCE hInstance;
 	HWND hwnd;
+	HMENU hmenu;
+
 	HRESULT hr;
 
 	Scene* scene;
