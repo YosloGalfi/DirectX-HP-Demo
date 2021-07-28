@@ -28,7 +28,7 @@ bool System::Initialize()
     hr = CoInitialize(NULL);
     assert(SUCCEEDED(hr));
 
-    //_crtBreakAlloc = 1940312;
+    //_crtBreakAlloc = 241;
 
     screenWidth = DEFAULT_SCREEN_WIDTH;
     screenHeight = DEFAULT_SCREEN_HEIGHT;
@@ -56,7 +56,6 @@ void System::Shutdown()
 {
     // Release all graphics stuff.
     if (scene) {
-        scene->Shutdown();
         delete scene;
         scene = 0;
     }

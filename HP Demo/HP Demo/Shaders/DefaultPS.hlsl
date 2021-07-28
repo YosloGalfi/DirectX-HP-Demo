@@ -21,20 +21,11 @@ cbuffer cBufferMaterial : register(b1)
 	float4 diffuseColor;
 	float4 ambientColor;
 	float4 specularColor;
-	float4 reflectionColor;
 
 	bool hasTexture;
-	//bool hasReflection;
 	bool isTerrain;
-
-	float3 padding2;
-
-	float4 translation;
-
 	bool hasNormMap;
-	float3 padding3;
-
-	float3 padding4;
+	bool canMove;
 };
 
 

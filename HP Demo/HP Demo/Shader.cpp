@@ -8,7 +8,7 @@ Shader::Shader(ID3D11Device* device)
 	this->inputLayout = 0;
 
 	this->dx11 = device;
-	this->bufferPerObject = 0;
+	this->objectBuffer = 0;
 	this->cameraBuffer = 0;
 	this->lightBuffer = 0;
 	this->materialBuffer = 0;
@@ -21,24 +21,78 @@ Shader::Shader(ID3D11Device* device)
 	this->normalMapSRV = 0;
 	this->texture = 0;
 
-	ZeroMemory(&cbPerCamera, sizeof(cBufferCamera));
-	ZeroMemory(&cbPerLight, sizeof(cBufferLight));
-	ZeroMemory(&cbPerMaterial, sizeof(cBufferMaterial));
-	ZeroMemory(&cbPerObject, sizeof(cBufferPerObject));
+	ZeroMemory(&cameraCB, sizeof(cBufferCamera));
+	ZeroMemory(&lightCB, sizeof(cBufferLight));
+	ZeroMemory(&materialCB, sizeof(cBufferMaterial));
+	ZeroMemory(&objectCB, sizeof(cBufferPerObject));
 }
 
 Shader::~Shader()
 {
-}
+	// Release the constant buffers.
+	if (lightBuffer)
+	{
+		lightBuffer->Release();
+		lightBuffer = 0;
+	}
 
-void Shader::Shutdown()
-{
-	ShutdownShader();
+	if (cameraBuffer)
+	{
+		cameraBuffer->Release();
+		cameraBuffer = 0;
+	}
+
+	if (objectBuffer)
+	{
+		objectBuffer->Release();
+		objectBuffer = 0;
+	}
+
+	if (materialBuffer)
+	{
+		materialBuffer->Release();
+		materialBuffer = 0;
+	}
+
+	// Release the layout.
+	if (inputLayout)
+	{
+		inputLayout->Release();
+		inputLayout = 0;
+	}
+
+	// Release the pixel shader.
+	if (pixelShader)
+	{
+		pixelShader->Release();
+		pixelShader = 0;
+	}
+
+	// Release the vertex shader.
+	if (vertexShader)
+	{
+		vertexShader->Release();
+		vertexShader = 0;
+	}
+
+	if (ErrorBlob)
+	{
+		ReleasePtr(ErrorBlob);
+	}
+
+	if (VSBlob)
+	{
+		ReleasePtr(VSBlob);
+	}
+
+	if (PSBlob)
+	{
+		ReleasePtr(PSBlob);
+	}
 }
 
 bool Shader::Render(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler)
 {
-
 	bool result;
 	result = SetCBuffers(context, model, view, projection, camera, light);
 	if (!result) {
@@ -115,8 +169,6 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilena
 		return false;
 	}
 
-
-
 	/*
 		CONSTANT BUFFER , CBPEROBJECT/Camerabuffer/Lightbuffer
 	*/
@@ -132,12 +184,11 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilena
 	cBufferDescription.MiscFlags = 0;
 	cBufferDescription.StructureByteStride = 0;
 
-	hr = device->CreateBuffer(&cBufferDescription, NULL, &bufferPerObject);
+	hr = device->CreateBuffer(&cBufferDescription, NULL, &objectBuffer);
 	if (FAILED(hr))
 	{
 		return false;
 	}
-
 
 	// Setup the description of the camera constant buffer that is in the vertex shader.
 	ZeroMemory(&cBufferDescription, sizeof(cBufferDescription));
@@ -240,117 +291,17 @@ bool Shader::CreateSkyboxInputLayout(ID3D11Device* device, ID3D11DeviceContext* 
 	return true;
 }
 
-void Shader::ShutdownShader()
-{
-	/*if (bufferPerObjectParticles)
-	{
-		bufferPerObjectParticles->Release();
-		bufferPerObjectParticles = 0;
-	}*/
-
-	// Release the constant buffers.
-	if (lightBuffer)
-	{
-		lightBuffer->Release();
-		lightBuffer = 0;
-	}
-
-	if (cameraBuffer)
-	{
-		cameraBuffer->Release();
-		cameraBuffer = 0;
-	}
-
-	if (bufferPerObject)
-	{
-		bufferPerObject->Release();
-		bufferPerObject = 0;
-	}
-
-	if (materialBuffer)
-	{
-		materialBuffer->Release();
-		materialBuffer = 0;
-	}
-
-	// Release the layout.
-	if (inputLayout)
-	{
-		inputLayout->Release();
-		inputLayout = 0;
-	}
-
-	// Release the pixel shader.
-	if (pixelShader)
-	{
-		pixelShader->Release();
-		pixelShader = 0;
-	}
-
-	// Release the vertex shader.
-	if (vertexShader)
-	{
-		vertexShader->Release();
-		vertexShader = 0;
-	}
-
-	// Release the geometry shader.
-	/*if (geometryShader)
-	{
-		geometryShader->Release();
-		geometryShader = 0;
-	}
-
-	if (cubeMap) {
-		cubeMap->Release();
-		cubeMap = 0;
-	}*/
-
-	if (ErrorBlob)
-	{
-		ReleasePtr(ErrorBlob);
-	}
-
-	if (VSBlob)
-	{
-		ReleasePtr(VSBlob);
-	}
-
-	if (PSBlob)
-	{
-		ReleasePtr(PSBlob);
-	}
-
-	/*if (GSBlob)
-	{
-		ReleasePtr(GSBlob);
-	}*/
-
-}
-
 bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light)
 {
 	DirectX::XMMATRIX worldViewProjection;
 	worldViewProjection = model->GetWorldMatrix() * view * projection;
 
-	cbPerObject.worldViewProj = DirectX::XMMatrixTranspose(worldViewProjection);
-	cbPerObject.world = DirectX::XMMatrixTranspose(model->GetWorldMatrix());
-	cbPerObject.InverseWorld = DirectX::XMMatrixInverse(nullptr, model->GetWorldMatrix());
+	objectCB.worldViewProj = DirectX::XMMatrixTranspose(worldViewProjection);
+	objectCB.world = DirectX::XMMatrixTranspose(model->GetWorldMatrix());
+	objectCB.InverseWorld = DirectX::XMMatrixInverse(nullptr, model->GetWorldMatrix());
 
-	/*if (model->GetSkeleton())
-	{
-		if (model->GetSkeleton()->GetBoneAmount() > 0)
-		{
-			for (unsigned int i = 0; i < model->GetSkeleton()->GetBoneAmount(); i++)
-			{
-				int keyframe = model->GetSkeleton()->GetCurrentKeyframe();
-				cbPerObject.boneTransforms[i] = model->GetSkeleton()->GetCurrentAnimation()->GetBonesVector()[i].GetFinalTransformationMatrix(keyframe);
-			}
-		}
-	}*/
-
-	context->UpdateSubresource(bufferPerObject, 0, nullptr, &cbPerObject, 0, 0);
-	context->VSSetConstantBuffers(0, 1, &bufferPerObject);
+	context->UpdateSubresource(objectBuffer, 0, nullptr, &objectCB, 0, 0);
+	context->VSSetConstantBuffers(0, 1, &objectBuffer);
 
 	// Set shader texture resource in the pixel shader.	
 	if (model->GetMaterial()[0].hasTexture) {
@@ -363,45 +314,40 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 		context->PSSetShaderResources(2, 1, &normalMapSRV);
 	}
 
-
 	/*
 		Set Camera buffer	// To Vertexshader
 	*/
-	cbPerCamera.cameraPosition = camera->GetPosition();
+	cameraCB.cameraPosition = camera->GetPosition();
 
-	context->UpdateSubresource(cameraBuffer, 0, nullptr, &cbPerCamera, 0, 0);
+	context->UpdateSubresource(cameraBuffer, 0, nullptr, &cameraCB, 0, 0);
 	context->VSSetConstantBuffers(1, 1, &cameraBuffer);
 	context->GSSetConstantBuffers(0, 1, &cameraBuffer);
 
 	/*
 		Set Light buffer	// To Pixelshader
 	*/
-	cbPerLight.ambientLightColor = light->GetAmbientColor();
-	cbPerLight.diffuseLightColor = light->GetDiffuseColor();
-	cbPerLight.specularLightColor = light->GetSpecularColor();
-	cbPerLight.lightPosition = light->GetLightPosition();
-	cbPerLight.lightRange = light->GetLightRange();
-	cbPerLight.lightAttenuation = light->GetLightAttenuation();
+	lightCB.ambientLightColor = light->GetAmbientColor();
+	lightCB.diffuseLightColor = light->GetDiffuseColor();
+	lightCB.specularLightColor = light->GetSpecularColor();
+	lightCB.lightPosition = light->GetLightPosition();
+	lightCB.lightRange = light->GetLightRange();
+	lightCB.lightAttenuation = light->GetLightAttenuation();
 
-	context->UpdateSubresource(lightBuffer, 0, nullptr, &cbPerLight, 0, 0);
+	context->UpdateSubresource(lightBuffer, 0, nullptr, &lightCB, 0, 0);
 	context->PSSetConstantBuffers(0, 1, &lightBuffer);
 
 
 	/*
 		MATERIALEEE			// To Pixelshader
 	*/
-	cbPerMaterial.ambientColor = model->GetMaterial()[0].ambientColor;
-	cbPerMaterial.diffuseColor = model->GetMaterial()[0].diffuseColor;
-	cbPerMaterial.specularColor = model->GetMaterial()[0].specularColor;
-	cbPerMaterial.reflectionColor = model->GetMaterial()[0].reflectionColor;
-	cbPerMaterial.shine = model->GetMaterial()[0].shine;
-	cbPerMaterial.hasTexture = model->GetMaterial()[0].hasTexture;
-	cbPerMaterial.hasReflection = model->GetMaterial()[0].hasReflection;
-	cbPerMaterial.isTerrain = model->GetMaterial()[0].isTerrain;
-	cbPerMaterial.translation = model->GetMaterial()[0].translation;
-	cbPerMaterial.hasNormMap = model->GetMaterial()[0].hasNormalMap;
+	materialCB.ambientColor = model->GetMaterial()[0].ambientColor;
+	materialCB.diffuseColor = model->GetMaterial()[0].diffuseColor;
+	materialCB.specularColor = model->GetMaterial()[0].specularColor;
+	materialCB.hasTexture = model->GetMaterial()[0].hasTexture;
+	materialCB.isTerrain = model->GetMaterial()[0].isTerrain;
+	materialCB.hasNormMap = model->GetMaterial()[0].hasNormalMap;
 
-	context->UpdateSubresource(materialBuffer, 0, nullptr, &cbPerMaterial, 0, 0);
+	context->UpdateSubresource(materialBuffer, 0, nullptr, &materialCB, 0, 0);
 	context->PSSetConstantBuffers(1, 1, &materialBuffer);
 	context->GSSetConstantBuffers(1, 1, &materialBuffer);
 
@@ -416,12 +362,12 @@ bool Shader::SetCBuffersWithCubemap(ID3D11DeviceContext* context, Model* model, 
 	DirectX::XMMATRIX worldViewProjection;
 	worldViewProjection = model->GetWorldMatrix() * view * projection;
 
-	cbPerObject.worldViewProj = DirectX::XMMatrixTranspose(worldViewProjection);
-	cbPerObject.world = DirectX::XMMatrixTranspose(model->GetWorldMatrix());
-	cbPerObject.InverseWorld = DirectX::XMMatrixInverse(nullptr, model->GetWorldMatrix());
+	objectCB.worldViewProj = DirectX::XMMatrixTranspose(worldViewProjection);
+	objectCB.world = DirectX::XMMatrixTranspose(model->GetWorldMatrix());
+	objectCB.InverseWorld = DirectX::XMMatrixInverse(nullptr, model->GetWorldMatrix());
 
-	context->UpdateSubresource(bufferPerObject, 0, nullptr, &cbPerObject, 0, 0);
-	context->VSSetConstantBuffers(vertexBuffernumber, 1, &bufferPerObject);
+	context->UpdateSubresource(objectBuffer, 0, nullptr, &objectCB, 0, 0);
+	context->VSSetConstantBuffers(vertexBuffernumber, 1, &objectBuffer);
 	vertexBuffernumber++;
 
 	// Set shader texture resource in the pixel shader.	
@@ -443,8 +389,8 @@ bool Shader::SetCBuffersWithCubemap(ID3D11DeviceContext* context, Model* model, 
 	/*
 		Set Camera buffer	// To Vertexshader
 	*/
-	cbPerCamera.cameraPosition = camera->GetPosition();
-	context->UpdateSubresource(cameraBuffer, 0, nullptr, &cbPerCamera, 0, 0);
+	cameraCB.cameraPosition = camera->GetPosition();
+	context->UpdateSubresource(cameraBuffer, 0, nullptr, &cameraCB, 0, 0);
 	context->VSSetConstantBuffers(vertexBuffernumber, 1, &cameraBuffer);
 	context->GSSetConstantBuffers(0, 1, &cameraBuffer);
 	vertexBuffernumber++;
@@ -453,14 +399,14 @@ bool Shader::SetCBuffersWithCubemap(ID3D11DeviceContext* context, Model* model, 
 	/*
 		Set Light buffer	// To Pixelshader
 	*/
-	cbPerLight.ambientLightColor = light->GetAmbientColor();
-	cbPerLight.diffuseLightColor = light->GetDiffuseColor();
-	cbPerLight.specularLightColor = light->GetSpecularColor();
-	cbPerLight.lightPosition = light->GetLightPosition();
-	cbPerLight.lightRange = light->GetLightRange();
-	cbPerLight.lightAttenuation = light->GetLightAttenuation();
+	lightCB.ambientLightColor = light->GetAmbientColor();
+	lightCB.diffuseLightColor = light->GetDiffuseColor();
+	lightCB.specularLightColor = light->GetSpecularColor();
+	lightCB.lightPosition = light->GetLightPosition();
+	lightCB.lightRange = light->GetLightRange();
+	lightCB.lightAttenuation = light->GetLightAttenuation();
 
-	context->UpdateSubresource(lightBuffer, 0, nullptr, &cbPerLight, 0, 0);
+	context->UpdateSubresource(lightBuffer, 0, nullptr, &lightCB, 0, 0);
 	context->PSSetConstantBuffers(pixelBuffernumber, 1, &lightBuffer);
 	pixelBuffernumber++;
 
@@ -468,17 +414,13 @@ bool Shader::SetCBuffersWithCubemap(ID3D11DeviceContext* context, Model* model, 
 	/*
 		MATERIALEEE			// To Pixelshader
 	*/
-	cbPerMaterial.ambientColor = model->GetMaterial()[0].ambientColor;
-	cbPerMaterial.diffuseColor = model->GetMaterial()[0].diffuseColor;
-	cbPerMaterial.specularColor = model->GetMaterial()[0].specularColor;
-	cbPerMaterial.reflectionColor = model->GetMaterial()[0].reflectionColor;
-	cbPerMaterial.shine = model->GetMaterial()[0].shine;
-	cbPerMaterial.hasTexture = model->GetMaterial()[0].hasTexture;
-	cbPerMaterial.hasReflection = model->GetMaterial()[0].hasReflection;
-	cbPerMaterial.translation = model->GetMaterial()[0].translation;
-	cbPerMaterial.hasNormMap = model->GetMaterial()[0].hasNormalMap;
+	materialCB.ambientColor = model->GetMaterial()[0].ambientColor;
+	materialCB.diffuseColor = model->GetMaterial()[0].diffuseColor;
+	materialCB.specularColor = model->GetMaterial()[0].specularColor;
+	materialCB.hasTexture = model->GetMaterial()[0].hasTexture;
+	materialCB.hasNormMap = model->GetMaterial()[0].hasNormalMap;
 
-	context->UpdateSubresource(materialBuffer, 0, nullptr, &cbPerMaterial, 0, 0);
+	context->UpdateSubresource(materialBuffer, 0, nullptr, &materialCB, 0, 0);
 	context->PSSetConstantBuffers(pixelBuffernumber, 1, &materialBuffer);
 	context->GSSetConstantBuffers(1, 1, &materialBuffer);
 	pixelBuffernumber++;

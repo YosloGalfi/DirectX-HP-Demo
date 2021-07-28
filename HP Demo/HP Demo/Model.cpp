@@ -122,7 +122,7 @@ ID3D11ShaderResourceView* Model::GetNormalMap()
     return this->normalMap->GetTexture();
 }
 
-bool Model::InitializeFromFbx(std::vector<Vertex> vertices, std::vector<DWORD> indices, ID3D11Device* device)
+bool Model::InitializeTerrain(std::vector<Vertex> vertices, std::vector<DWORD> indices, ID3D11Device* device)
 {
     this->indices = indices;
     this->vertices = vertices;
@@ -382,4 +382,11 @@ void Model::SetIndexBuffer(ID3D11Buffer* indexBuffer)
 void Model::SetVertexBuffer(ID3D11Buffer* vertexBuffer)
 {
     this->vertexBuffer = vertexBuffer;
+}
+
+void Model::LoadTextureObj(ID3D11ShaderResourceView* resource)
+{
+    texture = new Texture;
+
+    texture->SetTexture(resource);
 }

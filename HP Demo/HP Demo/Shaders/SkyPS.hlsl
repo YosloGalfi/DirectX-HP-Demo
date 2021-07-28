@@ -7,23 +7,11 @@ cbuffer cBufferMaterial : register(b0)
 	float4 diffuseColor;
 	float4 ambientColor;
 	float4 specularColor;
-	float4 reflectionColor;
 
-	float shine;
 	bool hasTexture;
-	bool hasReflection;
 	bool isTerrain;
-
-	bool canMove;
-	float3 padding2;
-
-	float4 translation;
-
 	bool hasNormMap;
-	float3 padding3;
-
-	bool isObj;
-	float3 padding4;
+	bool canMove;
 };
 
 struct PixelShaderInput

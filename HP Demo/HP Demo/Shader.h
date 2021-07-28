@@ -14,7 +14,6 @@ private:
 		DirectX::XMMATRIX worldViewProj;
 		DirectX::XMMATRIX world;
 		DirectX::XMMATRIX InverseWorld;
-		DirectX::XMMATRIX boneTransforms[50];
 	};
 
 	__declspec(align(16))
@@ -43,23 +42,11 @@ private:
 		DirectX::XMFLOAT4 diffuseColor;
 		DirectX::XMFLOAT4 ambientColor;
 		DirectX::XMFLOAT4 specularColor;
-		DirectX::XMFLOAT4 reflectionColor;
 
-		float shine;
 		int hasTexture;
-		int hasReflection;
 		int isTerrain;
-
-		int canMove;
-		DirectX::XMFLOAT3 padding2;
-
-		DirectX::XMFLOAT4 translation;
-
 		int hasNormMap;
-		DirectX::XMFLOAT3 padding3;
-
-		int isObj;
-		DirectX::XMFLOAT3 padding4;
+		int canMove;
 	};
 
 public:
@@ -70,13 +57,11 @@ public:
 
 	bool CreateDefaultInputLayout(ID3D11Device* device);
 	bool CreateSkyboxInputLayout(ID3D11Device* device, ID3D11DeviceContext* context);
-	void Shutdown();
 
 	bool Render(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler);
 	bool RenderWithCubemap(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, ID3D11ShaderResourceView* cubemap, Camera* camera, Light* light, ID3D11SamplerState* sampler);
 
 private:
-	void ShutdownShader();
 
 	bool SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light);
 	bool SetCBuffersWithCubemap(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, ID3D11ShaderResourceView* cubemap, Camera* camera, Light* light);
@@ -94,12 +79,12 @@ private:
 	ID3DBlob* VSBlob;
 	ID3DBlob* PSBlob;
 
-	cBufferPerObject cbPerObject;
-	cBufferCamera cbPerCamera;
-	cBufferLight cbPerLight;
-	cBufferMaterial cbPerMaterial;
+	cBufferPerObject objectCB;
+	cBufferCamera cameraCB;
+	cBufferLight lightCB;
+	cBufferMaterial materialCB;
 
-	ID3D11Buffer* bufferPerObject;
+	ID3D11Buffer* objectBuffer;
 	ID3D11Buffer* cameraBuffer;
 	ID3D11Buffer* lightBuffer;
 	ID3D11Buffer* materialBuffer;

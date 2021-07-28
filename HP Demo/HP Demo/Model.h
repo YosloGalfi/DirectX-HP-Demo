@@ -27,7 +27,6 @@ struct SurfaceMaterial
 	DirectX::XMFLOAT4 ambientColor = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 	DirectX::XMFLOAT4 specularColor = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 	DirectX::XMFLOAT4 reflectionColor = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
-	float shine = 1;
 
 	bool hasTexture = false;
 	bool hasReflection = false;
@@ -39,6 +38,7 @@ struct SurfaceMaterial
 	DirectX::XMFLOAT4 translation = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	bool hasNormalMap = false;
+	bool canMove;
 	int normMapTexArrayIndex = 0;
 };
 
@@ -85,12 +85,13 @@ public:
 
 	/* Texture loading */
 	bool LoadTexture(ID3D11Device*, LPCWSTR);
+	void LoadTextureObj(ID3D11ShaderResourceView* resource);
 	bool LoadNormalMap(ID3D11Device*, LPCWSTR);
 	void LoadNormalMapFbx(Texture* tex) { this->normalMap = tex; }
 	void LoadFbxTexture(Texture* tex) { this->texture = tex; }
 
 	//bool InitializeFromFbx(std::vector<Vertex> vertices, std::vector<DWORD> indices, Skeleton* skeleton, ID3D11Device* device);
-	bool InitializeFromFbx(std::vector<Vertex> vertices, std::vector<DWORD> indices, ID3D11Device* device);
+	bool InitializeTerrain(std::vector<Vertex> vertices, std::vector<DWORD> indices, ID3D11Device* device);
 
 private:
 	void ShutdownBuffers();

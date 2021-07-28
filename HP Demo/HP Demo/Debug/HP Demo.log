@@ -1,4 +1,8 @@
-﻿  System.cpp
-  main.cpp
-  Generating Code...
+﻿  Scene.cpp
+E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\HP Demo\Scene.cpp(78,17): warning C4316: 'DX11': object allocated on the heap may not be aligned 16
+E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\HP Demo\Scene.cpp(89,27): warning C4316: 'Camera': object allocated on the heap may not be aligned 16
+E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\HP Demo\Scene.cpp(107,40): warning C4316: 'Shader': object allocated on the heap may not be aligned 16
+E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\HP Demo\Scene.cpp(151,26): warning C4316: 'Model': object allocated on the heap may not be aligned 16
+E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\HP Demo\Scene.cpp(163,46): warning C4316: 'Shader': object allocated on the heap may not be aligned 16
+E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\HP Demo\Scene.cpp(170): warning C4715: 'Scene::InitializeSkybox': not all control paths return a value
   HP Demo.vcxproj -> E:\C++ projekt\Github\DirectX-HP-Demo\HP Demo\Debug\HP Demo.exe
